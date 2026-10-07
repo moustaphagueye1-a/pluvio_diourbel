@@ -1,0 +1,36 @@
+PROJET : TABLEAU DE BORD PLUVIOMETRIQUE 2026 - DRDR DE DIOURBEL
+==================================================================
+
+CONTENU DU DOSSIER
+-------------------
+nettoyage.py              Nettoie les bulletins hebdomadaires (Juin->Octobre)
+nettoyage_reference.py    Nettoie le tableau 2012-2025 et les normales 1991-2020
+indicateurs.py             Calcule les ecarts a la normale, a 2025, les rangs...
+maj_donnees.py              Fait les 3 etapes ci-dessus en une seule commande
+app.py                       Le tableau de bord (application Streamlit)
+db.py                        Connexion a la base (fichier local ou Supabase)
+requirements.txt             Liste des bibliotheques Python necessaires
+donnees_propres/             Base de donnees et fichiers CSV deja generes
+DEPLOIEMENT.txt               Guide pas-a-pas pour mettre l'app en ligne
+
+DEMARRAGE (la premiere fois)
+------------------------------
+1. Installer Python 3 si ce n'est pas deja fait (python.org)
+2. Ouvrir un terminal dans ce dossier
+3. Installer les bibliotheques :
+       pip install -r requirements.txt
+4. Lancer l'application :
+       streamlit run app.py
+5. Une page s'ouvre dans le navigateur (sinon : http://localhost:8501)
+
+CHAQUE SEMAINE SUIVANTE
+-------------------------
+Tout se passe dans le navigateur, sans terminal :
+1. Ouvrir l'application (streamlit run app.py si elle n'est pas deja lancee)
+2. Menu de gauche -> "Ajouter des donnees"
+3. Deposer le nouveau fichier Excel de la DRDR
+4. Cliquer sur "Mettre a jour le tableau de bord"
+
+Le fichier doit garder le nom donne par la DRDR (ex: "...du 02 au 08
+oct 2026...") pour que la date soit detectee automatiquement. Sinon,
+l'application demande la date manuellement.

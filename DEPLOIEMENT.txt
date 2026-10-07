@@ -1,0 +1,106 @@
+DEPLOIEMENT EN LIGNE - GUIDE COMPLET
+=====================================
+
+But : avoir un lien internet (https://....streamlit.app) que n'importe qui
+peut ouvrir, sans que ton PC soit allume, et ou les nouvelles semaines
+deposees via "Ajouter des donnees" restent sauvegardees pour de bon.
+
+Cela demande 2 services gratuits :
+  - Supabase    : la base de donnees en ligne, qui ne s'efface jamais
+  - Streamlit Community Cloud : qui fait tourner l'application en ligne
+
+
+ETAPE 1 - Creer la base de donnees sur Supabase
+-------------------------------------------------
+1. Va sur supabase.com, cree un compte (gratuit, via GitHub ou email).
+2. Clique sur "New project".
+     - Donne-lui un nom, ex. "pluvio-diourbel"
+     - Choisis un mot de passe pour la base (NOTE-LE, tu en auras besoin
+       plusieurs fois)
+     - Choisis une region proche (ex. Europe)
+3. Attends 1 a 2 minutes que le projet soit cree.
+4. Dans le menu de gauche : Project Settings -> Database.
+5. Cherche "Connection string" -> onglet "URI". Copie l'adresse, qui
+   ressemble a :
+     postgresql://postgres:[TON-MOT-DE-PASSE]@db.xxxxxxxx.supabase.co:5432/postgres
+   Remplace [TON-MOT-DE-PASSE] par le mot de passe choisi a l'etape 2.
+   Cette adresse complete s'appelle DATABASE_URL dans la suite du guide.
+
+
+ETAPE 2 - Charger les donnees dans Supabase (une seule fois, depuis ton PC)
+-----------------------------------------------------------------------------
+1. Ouvre un terminal dans ce dossier (celui qui contient app.py).
+2. Installe les nouvelles bibliotheques si ce n'est pas deja fait :
+       pip install -r requirements.txt
+3. Definis temporairement l'adresse de la base (remplace par la tienne) :
+     Windows (PowerShell) :
+       $env:DATABASE_URL = "postgresql://postgres:...@db.xxxx.supabase.co:5432/postgres"
+     Mac / Linux :
+       export DATABASE_URL="postgresql://postgres:...@db.xxxx.supabase.co:5432/postgres"
+4. Relance la mise a jour avec le dernier fichier Excel de la DRDR :
+       python maj_donnees.py "NomDuFichierDeLaDRDR.xlsx"
+   Comme DATABASE_URL est maintenant definie, les donnees sont ecrites
+   directement dans Supabase (plus dans le fichier local pluvio.db).
+5. Verifie sur supabase.com -> Table Editor : les tables (semaines,
+   observations_hebdo, indicateurs_poste_semaine, etc.) doivent
+   apparaitre, remplies de donnees.
+
+
+ETAPE 3 - Mettre le projet sur GitHub
+----------------------------------------
+1. Cree un compte sur github.com si tu n'en as pas.
+2. Cree un nouveau depot (bouton "New repository"), ex. "pluvio-dashboard".
+   Public ou Private, les deux marchent avec Streamlit Cloud.
+3. Mets-y tout le contenu de ce dossier (app.py, db.py, nettoyage.py,
+   nettoyage_reference.py, indicateurs.py, maj_donnees.py,
+   requirements.txt, le dossier donnees_propres/).
+   Le plus simple si tu connais Git, dans un terminal a la racine du
+   dossier :
+       git init
+       git add .
+       git commit -m "Premiere version"
+       git branch -M main
+       git remote add origin https://github.com/TON-COMPTE/pluvio-dashboard.git
+       git push -u origin main
+   Sinon, utilise l'interface web de GitHub : bouton "Add file" ->
+   "Upload files", et glisse tous les fichiers.
+
+
+ETAPE 4 - Deployer sur Streamlit Community Cloud
+----------------------------------------------------
+1. Va sur share.streamlit.io, connecte-toi avec ton compte GitHub.
+2. Clique sur "New app" (ou "Create app").
+3. Choisis ton depot, la branche "main", et "app.py" comme fichier
+   principal ("Main file path").
+4. AVANT de cliquer sur "Deploy" : clique sur "Advanced settings..."
+   puis la section "Secrets", et colle exactement (avec les guillemets) :
+       DATABASE_URL = "postgresql://postgres:...@db.xxxx.supabase.co:5432/postgres"
+   (la meme adresse qu'a l'etape 1)
+5. Clique sur "Deploy". Apres 1 a 2 minutes, l'application est en ligne.
+6. Tu obtiens un lien du type https://ton-app.streamlit.app : c'est le
+   lien a donner a l'agent de la DRDR.
+
+
+ENSUITE, CHAQUE SEMAINE
+--------------------------
+L'agent ouvre le lien, va sur "Ajouter des donnees", depose le fichier
+Excel de la DRDR, clique sur le bouton de mise a jour. C'est tout : les
+donnees sont ecrites directement dans Supabase, donc elles restent meme
+si l'application en ligne redemarre (mise en veille apres inactivite,
+par exemple). Personne n'a besoin de toucher a GitHub ni a un terminal
+pour les mises a jour hebdomadaires une fois ces 4 etapes faites.
+
+
+EN CAS DE PROBLEME
+---------------------
+- Erreur de connexion au deploiement ("could not connect to server",
+  "password authentication failed") : revérifie l'adresse DATABASE_URL
+  collee dans les Secrets Streamlit - mot de passe inclus, sans espace
+  avant/apres, avec les guillemets.
+- L'application dit "Aucune donnee n'a encore ete chargee" alors que
+  l'etape 2 a ete faite : verifie dans Supabase (Table Editor) que les
+  tables existent et contiennent des lignes - sinon relance l'etape 2.
+- Pour revenir au fonctionnement 100% local (sans Supabase) a tout
+  moment : il suffit de ne pas definir DATABASE_URL - l'application
+  utilise alors a nouveau le fichier donnees_propres/pluvio.db, comme
+  avant cette migration.
